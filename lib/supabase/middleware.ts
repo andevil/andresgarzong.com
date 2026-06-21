@@ -30,5 +30,6 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
+  supabaseResponse.headers.set('x-pathname', request.nextUrl.pathname)
   return supabaseResponse
 }
