@@ -1,5 +1,6 @@
 import { format, parseISO } from 'date-fns'
 import { createClient } from '@/lib/supabase/server'
+import { fmtTime } from '@/lib/utils'
 import { PageHeader, Badge, Card, EmptyState } from '@/components/crm/ui'
 import { AttendanceSheet } from '@/components/crm/AttendanceSheet'
 
@@ -86,7 +87,7 @@ export default async function AttendancePage({
                     >
                       <p className="font-medium">{s.courses?.name}</p>
                       <p className="mt-0.5 text-xs text-[#9A907F]">
-                        {format(parseISO(s.date), 'EEE d MMM')} · {s.start_time?.slice(0,5)}
+                        {format(parseISO(s.date), 'EEE d MMM')} · {fmtTime(s.start_time)}
                       </p>
                     </a>
                   </li>

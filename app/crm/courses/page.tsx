@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import { fmtTime } from '@/lib/utils'
 import { PageHeader, Badge, Card, Button, EmptyState } from '@/components/crm/ui'
 import { statusBadge } from '@/components/crm/ui'
 import { Plus } from '@phosphor-icons/react/dist/ssr'
@@ -44,7 +45,7 @@ export default async function CoursesPage() {
                       <h3 className="font-display text-xl font-light text-[#171410]">{c.name}</h3>
                       {c.day_of_week && (
                         <p className="mt-1 text-xs capitalize text-[#9A907F]">
-                          {c.day_of_week} · {c.start_time?.slice(0,5)}–{c.end_time?.slice(0,5)}
+                          {c.day_of_week} · {fmtTime(c.start_time)}–{fmtTime(c.end_time)}
                         </p>
                       )}
                     </div>

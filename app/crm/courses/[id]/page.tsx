@@ -6,6 +6,8 @@ import { PageHeader, Badge, Card, Button, Table, Th, Td, EmptyState } from '@/co
 import { statusBadge } from '@/components/crm/ui'
 import { PencilSimple, ArrowLeft, Plus } from '@phosphor-icons/react/dist/ssr'
 import { CourseSessionActions } from '@/components/crm/CourseSessionActions'
+import { DeleteButton } from '@/components/crm/DeleteButton'
+import { fmtTime } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
 
@@ -42,11 +44,14 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
 
       <PageHeader
         title={course.name}
-        subtitle={[course.day_of_week, course.start_time?.slice(0,5), course.location].filter(Boolean).join(' · ')}
+        subtitle={[course.day_of_week, course.start_time ? fmtTime(course.start_time) : null, course.location].filter(Boolean).join(' · ')}
         action={
-          <Link href={`/crm/courses/${id}/edit`}>
-            <Button variant="secondary"><PencilSimple size={14} weight="light" /> Edit</Button>
-          </Link>
+          <div className="flex gap-2">
+            <Link href={`/crm/courses/${id}/edit`}>
+              <Button variant="secondary" size="sm"><PencilSimple size={14} weight="light" /> Edit</Button>
+            </Link>
+            <DeleteButton table="courses" id={id} redirectTo="/crm/courses" label="Delete" />
+          </div>
         }
       />
 
@@ -113,7 +118,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
               {sessions.map(s => (
                 <tr key={s.id}>
                   <Td>{format(parseISO(s.date), 'EEE d MMM yyyy')}</Td>
-                  <Td className="text-xs text-[#9A907F]">{s.start_time?.slice(0,5)}–{s.end_time?.slice(0,5)}</Td>
+                  <Td className="text-xs text-[#9A907F]">{fmtTime(s.start_time)}–{fmtTime(s.end_time)}</Td>
                   <Td><Badge variant={statusBadge(s.status)}>{s.status}</Badge></Td>
                   <Td>
                     <Link href={`/crm/attendance?session=${s.id}`} className="text-xs text-[#C9A84C] hover:underline">

@@ -24,7 +24,7 @@ export async function updateSession(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
 
   // Protect all /crm routes — redirect to login if not authed
-  if (!user && request.nextUrl.pathname.startsWith('/crm')) {
+  if (!user && request.nextUrl.pathname.startsWith('/crm') && !request.nextUrl.pathname.startsWith('/crm/login')) {
     const url = request.nextUrl.clone()
     url.pathname = '/crm/login'
     return NextResponse.redirect(url)

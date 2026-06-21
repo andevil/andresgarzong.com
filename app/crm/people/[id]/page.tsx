@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { PageHeader, Badge, Card, Button, Table, Th, Td, EmptyState } from '@/components/crm/ui'
 import { statusBadge } from '@/components/crm/ui'
 import { PencilSimple, ArrowLeft, Plus } from '@phosphor-icons/react/dist/ssr'
+import { DeleteButton } from '@/components/crm/DeleteButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -47,9 +48,12 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
       <PageHeader
         title={person.full_name}
         action={
-          <Link href={`/crm/people/${id}/edit`}>
-            <Button variant="secondary"><PencilSimple size={14} weight="light" /> Edit</Button>
-          </Link>
+          <div className="flex gap-2">
+            <Link href={`/crm/people/${id}/edit`}>
+              <Button variant="secondary" size="sm"><PencilSimple size={14} weight="light" /> Edit</Button>
+            </Link>
+            <DeleteButton table="people" id={id} redirectTo="/crm/people" label="Delete" />
+          </div>
         }
       />
 

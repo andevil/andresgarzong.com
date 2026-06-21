@@ -1,4 +1,4 @@
-// Shared CRM UI primitives — all sharp corners, gold accent, ink palette
+// Shared CRM UI primitives — glassmorphism, rounded, Roboto
 
 import { cn } from '@/lib/utils'
 
@@ -8,12 +8,12 @@ import { cn } from '@/lib/utils'
 type BadgeVariant = 'gold' | 'green' | 'red' | 'orange' | 'gray' | 'blue'
 
 const badgeClasses: Record<BadgeVariant, string> = {
-  gold:   'bg-[#C9A84C]/15 text-[#9A6F1E]',
-  green:  'bg-emerald-50 text-emerald-700',
-  red:    'bg-red-50 text-red-700',
-  orange: 'bg-orange-50 text-orange-700',
-  gray:   'bg-[#F7F1E7] text-[#6B6155]',
-  blue:   'bg-blue-50 text-blue-700',
+  gold:   'bg-[#C9A84C]/20 text-[#9A6F1E] ring-1 ring-[#C9A84C]/30',
+  green:  'bg-emerald-100/80 text-emerald-700 ring-1 ring-emerald-200',
+  red:    'bg-red-100/80 text-red-700 ring-1 ring-red-200',
+  orange: 'bg-orange-100/80 text-orange-700 ring-1 ring-orange-200',
+  gray:   'bg-white/60 text-[#6B6155] ring-1 ring-[#E2DDD5]',
+  blue:   'bg-blue-100/80 text-blue-700 ring-1 ring-blue-200',
 }
 
 export function Badge({ children, variant = 'gray', className }: {
@@ -22,7 +22,11 @@ export function Badge({ children, variant = 'gray', className }: {
   className?: string
 }) {
   return (
-    <span className={cn('inline-block px-2 py-0.5 text-[0.68rem] uppercase tracking-wide font-medium', badgeClasses[variant], className)}>
+    <span className={cn(
+      'inline-block rounded-full px-2.5 py-0.5 text-[0.68rem] font-medium uppercase tracking-wide backdrop-blur-sm',
+      badgeClasses[variant],
+      className
+    )}>
       {children}
     </span>
   )
@@ -48,7 +52,10 @@ export function statusBadge(status: string) {
 // ---------------------------------------------------------------------------
 export function Card({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={cn('border border-[#E2DDD5] bg-white p-5', className)}>
+    <div className={cn(
+      'rounded-2xl border border-white/60 bg-white/60 p-5 shadow-sm backdrop-blur-sm',
+      className
+    )}>
       {children}
     </div>
   )
@@ -65,7 +72,7 @@ export function PageHeader({ title, subtitle, action }: {
   return (
     <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h1 className="font-display text-3xl font-light text-[#171410] md:text-4xl">{title}</h1>
+        <h1 className="text-3xl font-light tracking-tight text-[#171410] md:text-4xl">{title}</h1>
         {subtitle && <p className="mt-1 text-sm text-[#9A907F]">{subtitle}</p>}
       </div>
       {action && <div>{action}</div>}
@@ -79,10 +86,10 @@ export function PageHeader({ title, subtitle, action }: {
 type BtnVariant = 'primary' | 'secondary' | 'ghost' | 'danger'
 
 const btnClasses: Record<BtnVariant, string> = {
-  primary:   'bg-[#C9A84C] text-[#171410] hover:bg-[#b89438]',
-  secondary: 'border border-[#E2DDD5] bg-white text-[#171410] hover:border-[#C9A84C] hover:text-[#C9A84C]',
-  ghost:     'text-[#6B6155] hover:text-[#171410]',
-  danger:    'bg-red-600 text-white hover:bg-red-700',
+  primary:   'bg-[#C9A84C] text-[#171410] shadow-md shadow-[#C9A84C]/20 hover:bg-[#b89438] hover:shadow-lg hover:shadow-[#C9A84C]/30',
+  secondary: 'border border-white/60 bg-white/50 text-[#171410] shadow-sm backdrop-blur-sm hover:bg-white/80 hover:border-[#C9A84C]/50',
+  ghost:     'text-[#6B6155] hover:bg-white/40 hover:text-[#171410]',
+  danger:    'bg-red-500 text-white shadow-md shadow-red-500/20 hover:bg-red-600',
 }
 
 export function Button({
@@ -96,7 +103,7 @@ export function Button({
   return (
     <button
       className={cn(
-        'inline-flex items-center gap-2 font-medium tracking-wide transition-colors disabled:opacity-50',
+        'inline-flex items-center gap-2 rounded-xl font-medium tracking-wide transition-all duration-200 disabled:opacity-50',
         size === 'sm' ? 'px-3 py-1.5 text-xs' : 'px-5 py-2.5 text-sm',
         btnClasses[variant],
         className
@@ -121,7 +128,7 @@ export function Table({ children, className }: { children: React.ReactNode; clas
 
 export function Th({ children, className }: { children?: React.ReactNode; className?: string }) {
   return (
-    <th className={cn('border-b border-[#E2DDD5] px-4 py-3 text-left text-xs font-medium uppercase tracking-[0.15em] text-[#9A907F]', className)}>
+    <th className={cn('border-b border-white/40 px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.12em] text-[#9A907F]', className)}>
       {children}
     </th>
   )
@@ -129,7 +136,7 @@ export function Th({ children, className }: { children?: React.ReactNode; classN
 
 export function Td({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <td className={cn('border-b border-[#E2DDD5] px-4 py-3 text-[#171410]', className)}>
+    <td className={cn('border-b border-white/30 px-4 py-3 text-[#171410]', className)}>
       {children}
     </td>
   )
@@ -147,11 +154,11 @@ export function Field({ label, htmlFor, error, children, className }: {
 }) {
   return (
     <div className={className}>
-      <label htmlFor={htmlFor} className="mb-1.5 block text-xs uppercase tracking-[0.2em] text-[#9A907F]">
+      <label htmlFor={htmlFor} className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.15em] text-[#9A907F]">
         {label}
       </label>
       {children}
-      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+      {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
     </div>
   )
 }
@@ -159,7 +166,7 @@ export function Field({ label, htmlFor, error, children, className }: {
 // ---------------------------------------------------------------------------
 // Input / Select / Textarea
 // ---------------------------------------------------------------------------
-const inputBase = 'w-full border border-[#E2DDD5] bg-[#FAFAF8] px-3 py-2.5 text-sm text-[#171410] outline-none transition-colors focus:border-[#C9A84C] disabled:opacity-50'
+const inputBase = 'w-full rounded-xl border border-white/50 bg-white/60 px-3 py-2.5 text-sm text-[#171410] shadow-sm backdrop-blur-sm outline-none transition-all duration-200 focus:border-[#C9A84C]/60 focus:bg-white/80 focus:ring-2 focus:ring-[#C9A84C]/20 disabled:opacity-50'
 
 export function Input({ className, ...props }: React.InputHTMLAttributes<HTMLInputElement>) {
   return <input className={cn(inputBase, className)} {...props} />
@@ -199,9 +206,9 @@ export function StatCard({ label, value, sub, accent }: {
   accent?: boolean
 }) {
   return (
-    <Card className={cn('flex flex-col gap-1', accent && 'border-[#C9A84C]/30 bg-[#C9A84C]/5')}>
-      <span className="text-xs uppercase tracking-[0.2em] text-[#9A907F]">{label}</span>
-      <span className={cn('font-display text-4xl font-light', accent ? 'text-[#C9A84C]' : 'text-[#171410]')}>
+    <Card className={cn('flex flex-col gap-1', accent && 'border-[#C9A84C]/30 bg-[#C9A84C]/10')}>
+      <span className="text-xs font-semibold uppercase tracking-[0.15em] text-[#9A907F]">{label}</span>
+      <span className={cn('text-4xl font-light tracking-tight', accent ? 'text-[#C9A84C]' : 'text-[#171410]')}>
         {value}
       </span>
       {sub && <span className="text-xs text-[#9A907F]">{sub}</span>}

@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { format, parseISO } from 'date-fns'
 import { createClient } from '@/lib/supabase/server'
+import { fmtTime } from '@/lib/utils'
 import { PageHeader, Badge, Card, Button, EmptyState } from '@/components/crm/ui'
 import { statusBadge } from '@/components/crm/ui'
 import { Plus } from '@phosphor-icons/react/dist/ssr'
@@ -33,7 +34,7 @@ export default async function WorkshopsPage() {
                   <div>
                     <h3 className="font-display text-xl font-light text-[#171410]">{w.name}</h3>
                     <p className="mt-1 text-xs text-[#9A907F]">
-                      {format(parseISO(w.date), 'EEE d MMM yyyy')} · {w.start_time?.slice(0,5)}
+                      {format(parseISO(w.date), 'EEE d MMM yyyy')} · {fmtTime(w.start_time)}
                     </p>
                   </div>
                   <Badge variant={statusBadge(w.status)}>{w.status}</Badge>

@@ -43,6 +43,10 @@ export interface Course {
   default_price: number
   monthly_pass_price: number
   notes: string | null
+  slug: string | null
+  thumbnail_url: string | null
+  start_date: string | null
+  end_date: string | null
   created_at: string
   updated_at: string
 }
@@ -176,6 +180,8 @@ export interface Workshop {
   status: 'planned' | 'active' | 'completed' | 'cancelled'
   description: string | null
   notes: string | null
+  slug: string | null
+  thumbnail_url: string | null
   created_at: string
 }
 

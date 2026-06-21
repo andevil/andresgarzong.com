@@ -15,21 +15,25 @@ import {
   GearSix,
   X,
 } from '@phosphor-icons/react'
-import { useState } from 'react'
 import { cn } from '@/lib/utils'
 
 const nav = [
-  { href: '/crm',            label: 'Dashboard',      icon: House },
-  { href: '/crm/people',     label: 'People',         icon: Users },
-  { href: '/crm/waitlist',   label: 'Waitlist',       icon: ListChecks },
-  { href: '/crm/courses',    label: 'Courses',        icon: Chalkboard },
-  { href: '/crm/attendance', label: 'Attendance',     icon: CalendarCheck },
-  { href: '/crm/payments',   label: 'Payments',       icon: CurrencyCircleDollar },
-  { href: '/crm/passes',     label: 'Passes',         icon: Ticket },
-  { href: '/crm/private-lessons', label: 'Private Lessons', icon: Star },
-  { href: '/crm/workshops',  label: 'Workshops',      icon: ClipboardText },
-  { href: '/crm/settings',   label: 'Settings',       icon: GearSix },
+  { href: '/crm',                  label: 'Dashboard',      icon: House },
+  { href: '/crm/people',           label: 'People',         icon: Users },
+  { href: '/crm/waitlist',         label: 'Waitlist',       icon: ListChecks },
+  { href: '/crm/courses',          label: 'Courses',        icon: Chalkboard },
+  { href: '/crm/attendance',       label: 'Attendance',     icon: CalendarCheck },
+  { href: '/crm/payments',         label: 'Payments',       icon: CurrencyCircleDollar },
+  { href: '/crm/passes',           label: 'Passes',         icon: Ticket },
+  { href: '/crm/private-lessons',  label: 'Private Lessons',icon: Star },
+  { href: '/crm/workshops',        label: 'Workshops',      icon: ClipboardText },
+  { href: '/crm/settings',         label: 'Settings',       icon: GearSix },
 ]
+
+function closeSidebar() {
+  document.getElementById('crm-sidebar')?.classList.replace('translate-x-0', '-translate-x-full')
+  document.getElementById('crm-overlay')?.classList.add('hidden')
+}
 
 function NavLink({ href, label, icon: Icon }: (typeof nav)[number]) {
   const pathname = usePathname()
@@ -37,11 +41,12 @@ function NavLink({ href, label, icon: Icon }: (typeof nav)[number]) {
   return (
     <Link
       href={href}
+      onClick={closeSidebar}
       className={cn(
         'flex items-center gap-3 px-4 py-3 text-sm transition-colors',
         active
-          ? 'border-l-2 border-[#C9A84C] bg-[#C9A84C]/10 text-[#171410]'
-          : 'border-l-2 border-transparent text-[#6B6155] hover:border-[#C9A84C]/40 hover:bg-white/40 hover:text-[#171410]'
+          ? 'rounded-r-xl border-l-2 border-[#C9A84C] bg-[#C9A84C]/15 text-[#171410] font-medium'
+          : 'rounded-r-xl border-l-2 border-transparent text-[#6B6155] hover:border-[#C9A84C]/40 hover:bg-white/50 hover:text-[#171410]'
       )}
     >
       <Icon size={18} weight="light" />
@@ -51,32 +56,26 @@ function NavLink({ href, label, icon: Icon }: (typeof nav)[number]) {
 }
 
 export function CRMSidebar() {
-  const [mobileOpen, setMobileOpen] = useState(false)
-
   return (
     <>
-      {/* Mobile toggle — rendered by CRMTopbar via context; we handle the overlay here */}
-      {mobileOpen && (
-        <div
-          className="fixed inset-0 z-30 bg-black/30 lg:hidden"
-          onClick={() => setMobileOpen(false)}
-        />
-      )}
+      {/* Overlay */}
+      <div
+        id="crm-overlay"
+        className="fixed inset-0 z-30 hidden bg-black/30 lg:hidden"
+        onClick={closeSidebar}
+      />
 
       {/* Sidebar */}
       <aside
         id="crm-sidebar"
-        className={cn(
-          'fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-[#E2DDD5] bg-white transition-transform duration-300 lg:translate-x-0',
-          mobileOpen ? 'translate-x-0' : '-translate-x-full'
-        )}
+        className="-translate-x-full fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-white/40 bg-white/80 shadow-2xl backdrop-blur-xl transition-transform duration-300 lg:translate-x-0"
       >
         {/* Logo */}
-        <div className="flex h-16 items-center justify-between border-b border-[#E2DDD5] px-5">
+        <div className="flex h-16 items-center justify-between border-b border-white/30 px-5">
           <span className="font-display text-3xl font-light text-[#C9A84C]">CG</span>
           <span className="text-xs uppercase tracking-[0.2em] text-[#9A907F]">Admin</span>
           <button
-            onClick={() => setMobileOpen(false)}
+            onClick={closeSidebar}
             className="text-[#9A907F] lg:hidden"
             aria-label="Close menu"
           >
@@ -92,7 +91,7 @@ export function CRMSidebar() {
         </nav>
 
         {/* Footer */}
-        <div className="border-t border-[#E2DDD5] px-5 py-4">
+        <div className="border-t border-white/30 px-5 py-4">
           <p className="text-xs text-[#9A907F]">Salsita with Cris</p>
           <p className="mt-1 text-xs text-[#9A907F]">Budapest · {new Date().getFullYear()}</p>
         </div>

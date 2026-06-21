@@ -16,14 +16,20 @@ export function CRMTopbar() {
 
   const toggleSidebar = () => {
     const sidebar = document.getElementById('crm-sidebar')
+    const overlay = document.getElementById('crm-overlay')
     if (!sidebar) return
-    const isHidden = sidebar.classList.contains('-translate-x-full')
-    sidebar.classList.toggle('-translate-x-full', !isHidden)
-    sidebar.classList.toggle('translate-x-0', isHidden)
+    const isOpen = sidebar.classList.contains('translate-x-0')
+    if (isOpen) {
+      sidebar.classList.replace('translate-x-0', '-translate-x-full')
+      overlay?.classList.add('hidden')
+    } else {
+      sidebar.classList.replace('-translate-x-full', 'translate-x-0')
+      overlay?.classList.remove('hidden')
+    }
   }
 
   return (
-    <header className="flex h-16 items-center justify-between border-b border-[#E2DDD5] bg-white px-4 md:px-6">
+    <header className="flex h-16 items-center justify-between border-b border-white/40 bg-white/60 px-4 backdrop-blur-md md:px-6">
       <button
         onClick={toggleSidebar}
         className="text-[#6B6155] transition-colors hover:text-[#171410] lg:hidden"

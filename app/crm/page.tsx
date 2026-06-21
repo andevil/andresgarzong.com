@@ -8,6 +8,7 @@ import { statusBadge } from '@/components/crm/ui'
 import {
   UserPlus, CalendarCheck, CurrencyCircleDollar, ListChecks, ArrowRight
 } from '@phosphor-icons/react/dist/ssr'
+import { fmtTime } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
 
@@ -102,7 +103,7 @@ export default async function DashboardPage() {
                   <div>
                     <p className="text-sm font-medium text-[#171410]">{s.courses?.name}</p>
                     <p className="mt-0.5 text-xs text-[#9A907F]">
-                      {format(parseISO(s.date), 'EEE d MMM')} · {s.start_time?.slice(0,5)} · {s.location}
+                      {format(parseISO(s.date), 'EEE d MMM')} · {fmtTime(s.start_time)} · {s.location}
                     </p>
                   </div>
                   <Link href={`/crm/attendance?session=${s.id}`}>

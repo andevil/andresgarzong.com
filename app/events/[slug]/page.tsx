@@ -1,0 +1,196 @@
+import { notFound } from 'next/navigation'
+import type { Metadata } from 'next'
+import { createClient } from '@/lib/supabase/server'
+import { format, parseISO } from 'date-fns'
+import { MapPin, Clock, Users, CurrencyCircleDollar, InstagramLogo, WhatsappLogo } from '@phosphor-icons/react/dist/ssr'
+import { fmtTime } from '@/lib/utils'
+
+type Params = { slug: string }
+
+async function getEvent(slug: string) {
+  const supabase = await createClient()
+
+  const { data: workshop } = await supabase
+    .from('workshops')
+    .select('*')
+    .eq('slug', slug)
+    .single()
+  if (workshop) return { kind: 'workshop' as const, event: workshop }
+
+  const { data: course } = await supabase
+    .from('courses')
+    .select('*')
+    .eq('slug', slug)
+    .single()
+  if (course) return { kind: 'course' as const, event: course }
+
+  return null
+}
+
+export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
+  const { slug } = await params
+  const result = await getEvent(slug)
+  if (!result) return { title: 'Not found' }
+
+  const { event } = result
+  const title = `${event.name} — Salsita with Cris`
+  const description = ('description' in event && event.description)
+    ? event.description
+    : `Join us for ${event.name} with Cristhian Garzón in Budapest.`
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      images: event.thumbnail_url ? [{ url: event.thumbnail_url, width: 1200, height: 630 }] : [],
+      type: 'website',
+    },
+    twitter: {
+      card: event.thumbnail_url ? 'summary_large_image' : 'summary',
+      title,
+      description,
+      images: event.thumbnail_url ? [event.thumbnail_url] : [],
+    },
+  }
+}
+
+export default async function EventPage({ params }: { params: Promise<Params> }) {
+  const { slug } = await params
+  const result = await getEvent(slug)
+  if (!result) notFound()
+
+  const { kind, event } = result
+
+  const dateStr = 'date' in event && event.date
+    ? format(parseISO(event.date), 'EEEE, d MMMM yyyy')
+    : null
+
+  const timeStr = event.start_time
+    ? event.end_time
+      ? `${fmtTime(event.start_time)} – ${fmtTime(event.end_time)}`
+      : fmtTime(event.start_time)
+    : null
+
+  const priceStr = 'price' in event && event.price != null
+    ? event.price === 0 ? 'Free' : `${event.price.toLocaleString()} HUF`
+    : 'default_price' in event
+      ? `${(event.default_price as number).toLocaleString()} HUF / class`
+      : null
+
+  return (
+    <div className="min-h-screen bg-[#F7F1E7]">
+      {/* Hero thumbnail */}
+      {event.thumbnail_url ? (
+        <div className="relative h-64 w-full overflow-hidden sm:h-96">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={event.thumbnail_url}
+            alt={event.name}
+            className="h-full w-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#171410]/70 to-transparent" />
+          <div className="absolute bottom-0 left-0 p-6 sm:p-10">
+            <span className="mb-2 inline-block bg-[#C9A84C] px-3 py-1 text-xs font-semibold uppercase tracking-widest text-[#171410]">
+              {kind === 'workshop' ? (event.type ?? 'Event') : `${kind} · ${'level' in event ? event.level ?? '' : ''}`}
+            </span>
+            <h1 className="mt-2 font-display text-3xl font-light text-white sm:text-5xl">{event.name}</h1>
+          </div>
+        </div>
+      ) : (
+        <div className="bg-[#171410] px-6 py-16 sm:px-10">
+          <span className="mb-3 inline-block bg-[#C9A84C] px-3 py-1 text-xs font-semibold uppercase tracking-widest text-[#171410]">
+            {kind === 'workshop' ? (event.type ?? 'Event') : kind}
+          </span>
+          <h1 className="mt-2 font-display text-4xl font-light text-white sm:text-6xl">{event.name}</h1>
+        </div>
+      )}
+
+      {/* Content */}
+      <div className="mx-auto max-w-2xl px-5 py-10 sm:px-8">
+
+        {/* Details grid */}
+        <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {dateStr && (
+            <div className="flex items-start gap-3 border border-[#E2DDD5] bg-white p-4">
+              <Clock size={20} weight="light" className="mt-0.5 shrink-0 text-[#C9A84C]" />
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-widest text-[#9A907F]">Date &amp; Time</p>
+                <p className="mt-1 text-sm text-[#171410]">{dateStr}</p>
+                {timeStr && <p className="text-sm text-[#6B6155]">{timeStr}</p>}
+              </div>
+            </div>
+          )}
+          {event.location && (
+            <div className="flex items-start gap-3 border border-[#E2DDD5] bg-white p-4">
+              <MapPin size={20} weight="light" className="mt-0.5 shrink-0 text-[#C9A84C]" />
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-widest text-[#9A907F]">Location</p>
+                <p className="mt-1 text-sm text-[#171410]">{event.location}</p>
+              </div>
+            </div>
+          )}
+          {priceStr && (
+            <div className="flex items-start gap-3 border border-[#E2DDD5] bg-white p-4">
+              <CurrencyCircleDollar size={20} weight="light" className="mt-0.5 shrink-0 text-[#C9A84C]" />
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-widest text-[#9A907F]">Price</p>
+                <p className="mt-1 text-sm text-[#171410]">{priceStr}</p>
+              </div>
+            </div>
+          )}
+          {'capacity' in event && event.capacity && (
+            <div className="flex items-start gap-3 border border-[#E2DDD5] bg-white p-4">
+              <Users size={20} weight="light" className="mt-0.5 shrink-0 text-[#C9A84C]" />
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-widest text-[#9A907F]">Capacity</p>
+                <p className="mt-1 text-sm text-[#171410]">{event.capacity} spots</p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Description */}
+        {'description' in event && event.description && (
+          <div className="mb-8 border border-[#E2DDD5] bg-white p-6">
+            <h2 className="mb-3 font-display text-xl font-light text-[#171410]">About this event</h2>
+            <p className="whitespace-pre-line text-sm leading-relaxed text-[#6B6155]">{event.description}</p>
+          </div>
+        )}
+
+        {/* CTA */}
+        <div className="border border-[#E2DDD5] bg-white p-6 text-center">
+          <p className="mb-1 font-display text-2xl font-light text-[#171410]">Ready to join?</p>
+          <p className="mb-5 text-sm text-[#9A907F]">Reach out to reserve your spot</p>
+          <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+            <a
+              href="https://www.instagram.com/salsitawithcris"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 bg-[#171410] px-6 py-3 text-sm font-medium text-white transition-opacity hover:opacity-80"
+            >
+              <InstagramLogo size={18} weight="light" />
+              Instagram DM
+            </a>
+            <a
+              href="https://wa.me/message/salsitawithcris"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 bg-[#C9A84C] px-6 py-3 text-sm font-medium text-[#171410] transition-opacity hover:opacity-80"
+            >
+              <WhatsappLogo size={18} weight="light" />
+              WhatsApp
+            </a>
+          </div>
+        </div>
+
+        {/* Footer brand */}
+        <div className="mt-10 text-center">
+          <p className="font-display text-3xl font-light text-[#C9A84C]">Salsita with Cris</p>
+          <p className="mt-1 text-xs uppercase tracking-widest text-[#9A907F]">Colombian Salsa · Budapest</p>
+        </div>
+      </div>
+    </div>
+  )
+}

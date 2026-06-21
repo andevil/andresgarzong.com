@@ -1,3 +1,14 @@
+// Convert 24h "HH:MM" or "HH:MM:SS" to "h:MM AM/PM"
+export function fmtTime(t: string | null | undefined): string {
+  if (!t) return '—'
+  const [hStr, mStr] = t.split(':')
+  const h = parseInt(hStr, 10)
+  const m = parseInt(mStr, 10)
+  const period = h >= 12 ? 'PM' : 'AM'
+  const hour = h % 12 || 12
+  return `${hour}:${String(m).padStart(2, '0')} ${period}`
+}
+
 // Lightweight clsx-style className combiner — keeps components dependency-free.
 type ClassValue =
   | string

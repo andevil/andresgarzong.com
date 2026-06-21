@@ -54,6 +54,45 @@ lib/
 
 ---
 
+## CRM Structure (at `/crm`)
+
+```
+app/crm/
+  login/          — Supabase email/password auth
+  page.tsx        — Dashboard (stats, upcoming classes, unpaid, expiring passes, tasks)
+  people/         — List + detail + new + edit + log communication
+  courses/        — List + detail + new + edit + enroll dancer + generate sessions
+  attendance/     — Mobile-first check-in sheet
+  payments/       — List + add payment + unpaid alerts
+  passes/         — Active passes with credit bars + expiry urgency
+  waitlist/       — Status filter table + add + update status
+  private-lessons/— List + schedule
+  workshops/      — List + detail + create
+  settings/       — Business info, pricing, locations
+
+components/crm/
+  ui.tsx          — Badge, Card, Button, Table, Field, Input, Select, StatCard etc.
+  CRMSidebar.tsx  — Fixed sidebar with nav
+  CRMTopbar.tsx   — Mobile toggle + sign out
+  AttendanceSheet.tsx — Client check-in component
+  PersonForm.tsx, CourseForm.tsx, PaymentForm.tsx, PassForm.tsx,
+  WaitlistForm.tsx, WaitlistEditForm.tsx, PrivateLessonForm.tsx,
+  WorkshopForm.tsx, EnrollForm.tsx, CourseSessionActions.tsx
+
+lib/supabase/
+  client.ts, server.ts, middleware.ts, types.ts
+
+supabase/migrations/
+  001_crm_schema.sql  — 13 tables + RLS + indexes + triggers
+  002_seed.sql        — 7 courses, 15 dancers, passes, waitlist, sessions, tasks
+```
+
+**Stack additions for CRM:** `@supabase/supabase-js`, `@supabase/ssr`, `react-hook-form`, `zod@3`, `@hookform/resolvers@3`, `date-fns`
+
+**Note:** zod v3 + @hookform/resolvers v3 (NOT v4 — type inference incompatibility with react-hook-form)
+
+---
+
 ## Milestones
 
 | # | Milestone | Status |

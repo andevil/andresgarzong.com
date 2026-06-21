@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { format, parseISO } from 'date-fns'
 import { createClient } from '@/lib/supabase/server'
+import { fmtTime } from '@/lib/utils'
 import { PageHeader, Badge, Table, Th, Td, Button, EmptyState } from '@/components/crm/ui'
 import { statusBadge } from '@/components/crm/ui'
 import { Plus } from '@phosphor-icons/react/dist/ssr'
@@ -39,7 +40,7 @@ export default async function PrivateLessonsPage() {
                 <tr key={l.id} className="hover:bg-[#F7F1E7]/50">
                   <Td>
                     <p className="text-sm">{format(parseISO(l.date), 'd MMM yyyy')}</p>
-                    <p className="text-xs text-[#9A907F]">{l.start_time?.slice(0,5)}</p>
+                    <p className="text-xs text-[#9A907F]">{fmtTime(l.start_time)}</p>
                   </Td>
                   <Td>
                     <Link href={`/crm/people/${l.people?.id}`} className="font-medium hover:text-[#C9A84C]">

@@ -2,9 +2,11 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { format, parseISO } from 'date-fns'
 import { createClient } from '@/lib/supabase/server'
-import { PageHeader, Badge, Card, Table, Th, Td, EmptyState } from '@/components/crm/ui'
+import { PageHeader, Badge, Card, Button, Table, Th, Td, EmptyState } from '@/components/crm/ui'
 import { statusBadge } from '@/components/crm/ui'
-import { ArrowLeft } from '@phosphor-icons/react/dist/ssr'
+import { ArrowLeft, PencilSimple } from '@phosphor-icons/react/dist/ssr'
+import { DeleteButton } from '@/components/crm/DeleteButton'
+import { fmtTime } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
 
@@ -26,7 +28,15 @@ export default async function WorkshopDetailPage({ params }: { params: Promise<{
       </div>
       <PageHeader
         title={workshop.name}
-        subtitle={format(parseISO(workshop.date), 'EEEE, d MMMM yyyy')}
+        subtitle={[format(parseISO(workshop.date), 'EEEE, d MMMM yyyy'), workshop.start_time ? fmtTime(workshop.start_time) : null].filter(Boolean).join(' · ')}
+        action={
+          <div className="flex gap-2">
+            <Link href={`/crm/workshops/${id}/edit`}>
+              <Button variant="secondary" size="sm"><PencilSimple size={14} weight="light" /> Edit</Button>
+            </Link>
+            <DeleteButton table="workshops" id={id} redirectTo="/crm/workshops" label="Delete" />
+          </div>
+        }
       />
       <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
         {[

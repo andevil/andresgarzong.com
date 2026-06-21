@@ -21,8 +21,8 @@
    Global rules
    --------------------------------------------------------------------------- */
 
-/* Enforce sharp corners everywhere — no border radius, ever. */
-* {
+/* Portfolio enforces sharp corners — scoped so CRM can use rounded freely */
+.portfolio-root * {
   border-radius: 0 !important;
 }
 

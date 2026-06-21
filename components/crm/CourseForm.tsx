@@ -1,15 +1,22 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/client'
 import { Field, Input, Select, Textarea, Button, Card } from '@/components/crm/ui'
+import { ImageUpload } from '@/components/crm/ImageUpload'
 import type { Course } from '@/lib/supabase/types'
+
+function toSlug(s: string) {
+  return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+}
 
 const schema = z.object({
   name:               z.string().min(1, 'Required'),
+  slug:               z.string().regex(/^[a-z0-9-]*$/, 'Only lowercase letters, numbers and hyphens').optional(),
   style:              z.string(),
   level:              z.string().optional(),
   description:        z.string().optional(),
@@ -17,6 +24,8 @@ const schema = z.object({
   day_of_week:        z.string().optional(),
   start_time:         z.string().optional(),
   end_time:           z.string().optional(),
+  start_date:         z.string().optional(),
+  end_date:           z.string().optional(),
   capacity:           z.coerce.number().optional(),
   status:             z.string(),
   season:             z.string().optional(),
@@ -29,43 +38,67 @@ type F = z.infer<typeof schema>
 
 export function CourseForm({ course }: { course?: Course }) {
   const router = useRouter()
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<F>({
+  const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(course?.thumbnail_url ?? null)
+  const [slugTouched, setSlugTouched] = useState(!!course?.slug)
+  const [multiDay, setMultiDay] = useState(!!course?.end_date)
+  const [submitError, setSubmitError] = useState<string | null>(null)
+
+  const { register, handleSubmit, control, setValue, formState: { errors, isSubmitting } } = useForm<F>({
     resolver: zodResolver(schema),
     defaultValues: {
-      name: course?.name ?? '',
-      style: course?.style ?? 'partnerwork',
-      level: course?.level ?? '',
-      description: course?.description ?? '',
-      location: course?.location ?? '',
-      day_of_week: course?.day_of_week ?? '',
-      start_time: course?.start_time ?? '',
-      end_time: course?.end_time ?? '',
-      capacity: course?.capacity ?? undefined,
-      status: course?.status ?? 'active',
-      season: course?.season ?? '',
-      default_price: course?.default_price ?? 4000,
+      name:               course?.name               ?? '',
+      slug:               course?.slug               ?? '',
+      style:              course?.style              ?? 'partnerwork',
+      level:              course?.level              ?? '',
+      description:        course?.description        ?? '',
+      location:           course?.location           ?? '',
+      day_of_week:        course?.day_of_week        ?? '',
+      start_time:         course?.start_time         ?? '',
+      end_time:           course?.end_time           ?? '',
+      capacity:           course?.capacity           ?? undefined,
+      status:             course?.status             ?? 'active',
+      season:             course?.season             ?? '',
+      start_date:         course?.start_date         ?? '',
+      end_date:           course?.end_date           ?? '',
+      default_price:      course?.default_price      ?? 4000,
       monthly_pass_price: course?.monthly_pass_price ?? 15000,
-      notes: course?.notes ?? '',
+      notes:              course?.notes              ?? '',
     },
   })
 
-  const onSubmit = async (values: F) => {
-    const supabase = createClient()
-    const clean = {
-      ...values,
-      level: values.level || null,
-      location: values.location || null,
-      day_of_week: values.day_of_week || null,
-      start_time: values.start_time || null,
-      end_time: values.end_time || null,
-      season: values.season || null,
-      notes: values.notes || null,
+  const nameValue = useWatch({ control, name: 'name' })
+
+  useEffect(() => {
+    if (!slugTouched && nameValue) {
+      setValue('slug', toSlug(nameValue))
     }
+  }, [nameValue, slugTouched, setValue])
+
+  const onSubmit = async (values: F) => {
+    setSubmitError(null)
+    const supabase = createClient()
+    const payload = {
+      ...values,
+      slug:          values.slug || null,
+      level:         values.level || null,
+      location:      values.location || null,
+      day_of_week:   values.day_of_week || null,
+      start_time:    values.start_time || null,
+      end_time:      values.end_time || null,
+      season:        values.season || null,
+      notes:         values.notes || null,
+      start_date:    values.start_date || null,
+      end_date:      multiDay ? (values.end_date || null) : null,
+      thumbnail_url: thumbnailUrl,
+    }
+
     if (course) {
-      await supabase.from('courses').update(clean).eq('id', course.id)
+      const { error } = await supabase.from('courses').update(payload).eq('id', course.id)
+      if (error) { setSubmitError(error.message); return }
       router.push(`/crm/courses/${course.id}`)
     } else {
-      const { data } = await supabase.from('courses').insert(clean).select().single()
+      const { data, error } = await supabase.from('courses').insert(payload).select().single()
+      if (error) { setSubmitError(error.message); return }
       router.push(`/crm/courses/${data?.id}`)
     }
     router.refresh()
@@ -75,9 +108,26 @@ export function CourseForm({ course }: { course?: Course }) {
     <form onSubmit={handleSubmit(onSubmit)}>
       <Card className="mb-6">
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+
           <Field label="Course name" htmlFor="name" error={errors.name?.message} className="sm:col-span-2">
             <Input id="name" {...register('name')} />
           </Field>
+
+          <Field label="Short URL slug" htmlFor="slug" error={errors.slug?.message} className="sm:col-span-2">
+            <div className="flex items-center">
+              <span className="flex h-10 items-center rounded-l-xl border border-r-0 border-white/50 bg-white/30 px-3 text-xs text-[#9A907F] whitespace-nowrap">
+                /events/
+              </span>
+              <Input
+                id="slug"
+                className="rounded-l-none"
+                placeholder="a1-partnerwork-monday"
+                {...register('slug', { onChange: () => setSlugTouched(true) })}
+              />
+            </div>
+            <p className="mt-1 text-xs text-[#9A907F]">Auto-generated from name · edit to customise</p>
+          </Field>
+
           <Field label="Style" htmlFor="style">
             <Select id="style" {...register('style')}>
               {['partnerwork','caleña','fusion','private','workshop','other'].map(s => (
@@ -114,6 +164,26 @@ export function CourseForm({ course }: { course?: Course }) {
           <Field label="End time" htmlFor="end_time">
             <Input id="end_time" type="time" {...register('end_time')} />
           </Field>
+          {/* Dates */}
+          <Field label="Start date" htmlFor="start_date">
+            <Input id="start_date" type="date" {...register('start_date')} />
+          </Field>
+          <div className="flex items-center gap-3 pt-6">
+            <input
+              id="multi_day"
+              type="checkbox"
+              checked={multiDay}
+              onChange={e => setMultiDay(e.target.checked)}
+              className="h-4 w-4 accent-[#C9A84C]"
+            />
+            <label htmlFor="multi_day" className="text-sm text-[#171410]">Multiple days / has end date</label>
+          </div>
+          {multiDay && (
+            <Field label="End date" htmlFor="end_date">
+              <Input id="end_date" type="date" {...register('end_date')} />
+            </Field>
+          )}
+
           <Field label="Capacity" htmlFor="capacity">
             <Input id="capacity" type="number" {...register('capacity')} />
           </Field>
@@ -133,8 +203,17 @@ export function CourseForm({ course }: { course?: Course }) {
           <Field label="Notes" htmlFor="notes" className="sm:col-span-2">
             <Textarea id="notes" rows={3} {...register('notes')} />
           </Field>
+
+          <Field label="Thumbnail image" className="sm:col-span-2">
+            <ImageUpload value={thumbnailUrl} onChange={setThumbnailUrl} folder="courses" />
+          </Field>
         </div>
       </Card>
+
+      {submitError && (
+        <p className="mb-4 rounded-lg bg-red-50 px-4 py-2 text-sm text-red-600">{submitError}</p>
+      )}
+
       <div className="flex gap-3">
         <Button type="submit" disabled={isSubmitting}>
           {isSubmitting ? 'Saving…' : course ? 'Save changes' : 'Add course'}
