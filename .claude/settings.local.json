@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm -v)",
+      "Read(//usr/local/bin/**)",
+      "Bash([ -s \"$HOME/.nvm/nvm.sh\" ])",
+      "Read(//Users/andresgarzon/.volta/**)",
+      "Read(//Users/andresgarzon/**)"
+    ]
+  }
+}
