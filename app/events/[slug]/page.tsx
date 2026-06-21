@@ -83,19 +83,19 @@ export default async function EventPage({ params }: { params: Promise<Params> })
     <div className="min-h-screen bg-[#F7F1E7]">
       {/* Hero thumbnail */}
       {event.thumbnail_url ? (
-        <div className="relative w-full" style={{ aspectRatio: '16/9' }}>
+        <div className="relative w-full" style={{ aspectRatio: '16/6' }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={event.thumbnail_url}
             alt={event.name}
-            className="absolute inset-0 h-full w-full object-cover"
+            className="absolute inset-0 h-full w-full object-cover object-center"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#171410]/70 to-transparent" />
-          <div className="absolute bottom-0 left-0 p-6 sm:p-10">
-            <span className="mb-2 inline-block bg-[#C9A84C] px-3 py-1 text-xs font-semibold uppercase tracking-widest text-[#171410]">
+          <div className="absolute inset-0 bg-gradient-to-t from-[#171410]/60 via-transparent to-transparent" />
+          <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-8">
+            <span className="mb-1.5 inline-block bg-[#C9A84C] px-2.5 py-0.5 text-xs font-semibold uppercase tracking-widest text-[#171410]">
               {kind === 'workshop' ? (event.type ?? 'Event') : `${kind} · ${'level' in event ? event.level ?? '' : ''}`}
             </span>
-            <h1 className="mt-2 font-display text-3xl font-light text-white sm:text-5xl">{event.name}</h1>
+            <h1 className="font-display text-2xl font-light text-white sm:text-4xl">{event.name}</h1>
           </div>
         </div>
       ) : (
