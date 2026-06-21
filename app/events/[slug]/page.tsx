@@ -82,33 +82,25 @@ export default async function EventPage({ params }: { params: Promise<Params> })
   return (
     <div className="min-h-screen bg-[#F7F1E7]">
       {/* Hero thumbnail */}
-      {event.thumbnail_url ? (
-        <div>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={event.thumbnail_url}
-            alt={event.name}
-            className="block w-full object-contain"
-            style={{ maxHeight: '70vh' }}
-          />
-          <div className="bg-[#171410] px-6 py-6 sm:px-10">
-            <span className="mb-2 inline-block bg-[#C9A84C] px-2.5 py-0.5 text-xs font-semibold uppercase tracking-widest text-[#171410]">
-              {kind === 'workshop' ? (event.type ?? 'Event') : `${kind} · ${'level' in event ? event.level ?? '' : ''}`}
-            </span>
-            <h1 className="font-display text-2xl font-light text-white sm:text-4xl">{event.name}</h1>
-          </div>
-        </div>
-      ) : (
-        <div className="bg-[#171410] px-6 py-16 sm:px-10">
-          <span className="mb-3 inline-block bg-[#C9A84C] px-3 py-1 text-xs font-semibold uppercase tracking-widest text-[#171410]">
-            {kind === 'workshop' ? (event.type ?? 'Event') : kind}
-          </span>
-          <h1 className="mt-2 font-display text-4xl font-light text-white sm:text-6xl">{event.name}</h1>
-        </div>
+      {event.thumbnail_url && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={event.thumbnail_url}
+          alt={event.name}
+          className="block w-full"
+        />
       )}
 
       {/* Content */}
       <div className="mx-auto max-w-2xl px-5 py-10 sm:px-8">
+
+        {/* Title */}
+        <div className="mb-8">
+          <span className="mb-2 inline-block text-xs font-semibold uppercase tracking-widest text-[#C9A84C]">
+            {kind === 'workshop' ? (event.type ?? 'Event') : `${kind}${'level' in event && event.level ? ` · ${event.level}` : ''}`}
+          </span>
+          <h1 className="font-display text-3xl font-light text-[#171410] sm:text-5xl">{event.name}</h1>
+        </div>
 
         {/* Details grid */}
         <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
