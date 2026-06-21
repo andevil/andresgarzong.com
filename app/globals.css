@@ -1,0 +1,88 @@
+@import "tailwindcss";
+
+/* ===========================================================================
+   Design tokens — Salsita with Cris
+   Editorial luxury: warm cream paper, black ink, single gold accent.
+   =========================================================================== */
+@theme {
+  --font-display: var(--font-cormorant);
+  --font-sans: var(--font-dm-sans);
+
+  --color-gold: #c9a84c;
+  --color-ink: #171410;
+  --color-ink-mid: #6b6155;
+  --color-ink-soft: #9a907f;
+  --color-divider: #e2ddd5;
+  --color-warm-white: #f7f5f1;
+  --color-cream: #fafaf8;
+}
+
+/* ---------------------------------------------------------------------------
+   Global rules
+   --------------------------------------------------------------------------- */
+
+/* Enforce sharp corners everywhere — no border radius, ever. */
+* {
+  border-radius: 0 !important;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: #fafaf8;
+  color: #171410;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Clean, accessible focus states using gold. */
+:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+/* Respect reduced motion at the CSS level too. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Marquee animation (MagicUI Marquee)
+   --------------------------------------------------------------------------- */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-100% - var(--gap)));
+  }
+}
+
+@keyframes marquee-vertical {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(calc(-100% - var(--gap)));
+  }
+}
+
+.animate-marquee {
+  animation: marquee var(--duration) linear infinite;
+}
+
+.animate-marquee-vertical {
+  animation: marquee-vertical var(--duration) linear infinite;
+}
