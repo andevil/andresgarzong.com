@@ -80,19 +80,18 @@ export default async function EventPage({ params }: { params: Promise<Params> })
       : null
 
   return (
-    <div className="min-h-screen bg-[#F7F1E7]">
-      {/* Hero thumbnail */}
-      {event.thumbnail_url && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={event.thumbnail_url}
-          alt={event.name}
-          className="block w-full"
-        />
-      )}
+    <div className="min-h-screen bg-[#F7F1E7] py-10">
+      <div className="mx-auto max-w-2xl px-5 sm:px-8">
 
-      {/* Content */}
-      <div className="mx-auto max-w-2xl px-5 py-10 sm:px-8">
+        {/* Hero thumbnail */}
+        {event.thumbnail_url && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={event.thumbnail_url}
+            alt={event.name}
+            className="mb-8 block w-full"
+          />
+        )}
 
         {/* Title */}
         <div className="mb-8">
