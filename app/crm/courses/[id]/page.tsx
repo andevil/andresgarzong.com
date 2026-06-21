@@ -4,7 +4,7 @@ import { format, parseISO } from 'date-fns'
 import { createClient } from '@/lib/supabase/server'
 import { PageHeader, Badge, Card, Button, Table, Th, Td, EmptyState } from '@/components/crm/ui'
 import { statusBadge } from '@/components/crm/ui'
-import { PencilSimple, ArrowLeft, Plus } from '@phosphor-icons/react/dist/ssr'
+import { PencilSimple, ArrowLeft, Plus, ArrowSquareOut } from '@phosphor-icons/react/dist/ssr'
 import { CourseSessionActions } from '@/components/crm/CourseSessionActions'
 import { DeleteButton } from '@/components/crm/DeleteButton'
 import { fmtTime } from '@/lib/utils'
@@ -47,6 +47,11 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
         subtitle={[course.day_of_week, course.start_time ? fmtTime(course.start_time) : null, course.location].filter(Boolean).join(' · ')}
         action={
           <div className="flex gap-2">
+            {course.slug && (
+              <a href={`/events/${course.slug}`} target="_blank" rel="noopener noreferrer">
+                <Button variant="secondary" size="sm"><ArrowSquareOut size={14} weight="light" /> Preview</Button>
+              </a>
+            )}
             <Link href={`/crm/courses/${id}/edit`}>
               <Button variant="secondary" size="sm"><PencilSimple size={14} weight="light" /> Edit</Button>
             </Link>

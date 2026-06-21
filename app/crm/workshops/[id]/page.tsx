@@ -4,7 +4,7 @@ import { format, parseISO } from 'date-fns'
 import { createClient } from '@/lib/supabase/server'
 import { PageHeader, Badge, Card, Button, Table, Th, Td, EmptyState } from '@/components/crm/ui'
 import { statusBadge } from '@/components/crm/ui'
-import { ArrowLeft, PencilSimple } from '@phosphor-icons/react/dist/ssr'
+import { ArrowLeft, PencilSimple, ArrowSquareOut } from '@phosphor-icons/react/dist/ssr'
 import { DeleteButton } from '@/components/crm/DeleteButton'
 import { fmtTime } from '@/lib/utils'
 
@@ -31,6 +31,11 @@ export default async function WorkshopDetailPage({ params }: { params: Promise<{
         subtitle={[format(parseISO(workshop.date), 'EEEE, d MMMM yyyy'), workshop.start_time ? fmtTime(workshop.start_time) : null].filter(Boolean).join(' · ')}
         action={
           <div className="flex gap-2">
+            {workshop.slug && (
+              <a href={`/events/${workshop.slug}`} target="_blank" rel="noopener noreferrer">
+                <Button variant="secondary" size="sm"><ArrowSquareOut size={14} weight="light" /> Preview</Button>
+              </a>
+            )}
             <Link href={`/crm/workshops/${id}/edit`}>
               <Button variant="secondary" size="sm"><PencilSimple size={14} weight="light" /> Edit</Button>
             </Link>
