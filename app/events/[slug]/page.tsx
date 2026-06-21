@@ -83,12 +83,12 @@ export default async function EventPage({ params }: { params: Promise<Params> })
     <div className="min-h-screen bg-[#F7F1E7]">
       {/* Hero thumbnail */}
       {event.thumbnail_url ? (
-        <div className="relative h-64 w-full overflow-hidden sm:h-96">
+        <div className="relative w-full" style={{ aspectRatio: '16/9' }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={event.thumbnail_url}
             alt={event.name}
-            className="h-full w-full object-cover"
+            className="absolute inset-0 h-full w-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#171410]/70 to-transparent" />
           <div className="absolute bottom-0 left-0 p-6 sm:p-10">
