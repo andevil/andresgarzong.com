@@ -1,6 +1,16 @@
-import { PageHeader, Card } from '@/components/crm/ui'
+import Link from 'next/link'
+import { createClient } from '@/lib/supabase/server'
+import { PageHeader, Card, Badge, Table, Th, Td, EmptyState } from '@/components/crm/ui'
 
-export default function SettingsPage() {
+export const dynamic = 'force-dynamic'
+
+export default async function SettingsPage() {
+  const supabase = await createClient()
+  const { data: rules } = await supabase
+    .from('notification_rules')
+    .select('*')
+    .order('created_at')
+
   return (
     <div>
       <PageHeader title="Settings" subtitle="Business configuration" />
@@ -39,6 +49,62 @@ export default function SettingsPage() {
             ))}
           </ul>
         </Card>
+      </div>
+
+      {/* Notification Rules */}
+      <div className="mt-8">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="font-display text-2xl font-light text-[#171410]">Notification Rules</h2>
+          <Link
+            href="/crm/notifications"
+            className="text-xs text-[#C9A84C] hover:underline"
+          >
+            View all notifications
+          </Link>
+        </div>
+
+        {rules && rules.length > 0 ? (
+          <Table>
+            <thead>
+              <tr>
+                <Th>Name</Th>
+                <Th>Trigger</Th>
+                <Th>Days before</Th>
+                <Th>Audience</Th>
+                <Th>Channel</Th>
+                <Th>Enabled</Th>
+              </tr>
+            </thead>
+            <tbody>
+              {rules.map(r => (
+                <tr key={r.id}>
+                  <Td>
+                    <span className="font-medium text-[#171410]">{r.name}</span>
+                    {r.message_template && (
+                      <p className="mt-0.5 text-xs text-[#9A907F] truncate max-w-xs">{r.message_template}</p>
+                    )}
+                  </Td>
+                  <Td><Badge variant="gray">{r.trigger_type.replace(/_/g, ' ')}</Badge></Td>
+                  <Td>{r.trigger_days_before ?? '—'}</Td>
+                  <Td>{r.audience}</Td>
+                  <Td>{r.channel.replace(/_/g, ' ')}</Td>
+                  <Td>
+                    {r.enabled
+                      ? <Badge variant="green">On</Badge>
+                      : <Badge variant="gray">Off</Badge>
+                    }
+                  </Td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        ) : (
+          <EmptyState message="No notification rules configured." />
+        )}
+
+        <p className="mt-3 text-xs text-[#9A907F]">
+          Notification rules are managed via the database. Contact your developer to add or modify rules.
+        </p>
       </div>
     </div>
   )

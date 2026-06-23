@@ -26,6 +26,9 @@ export default async function DashboardPage() {
     { data: pendingPayments },
     { data: expiringPasses },
     { data: openTasks },
+    { data: expiringPackages },
+    { data: unpaidPackages },
+    { data: unusedBonuses },
   ] = await Promise.all([
     supabase.from('people').select('*', { count: 'exact', head: true }).eq('status', 'active'),
     supabase.from('waitlist_entries').select('*', { count: 'exact', head: true }).in('status', ['new', 'contacted']),
@@ -53,6 +56,29 @@ export default async function DashboardPage() {
       .select('*, people(full_name)')
       .eq('status', 'open')
       .order('due_date', { nullsFirst: false })
+      .limit(5),
+    // Package alerts
+    supabase
+      .from('student_packages')
+      .select('id, name, expiry_date, people(id, full_name)')
+      .eq('archived', false)
+      .lte('expiry_date', in14days)
+      .gte('expiry_date', todayStr)
+      .order('expiry_date')
+      .limit(5),
+    supabase
+      .from('student_packages')
+      .select('id, name, people(id, full_name)')
+      .eq('archived', false)
+      .eq('payment_status', 'unpaid')
+      .order('created_at', { ascending: false })
+      .limit(5),
+    supabase
+      .from('package_bonuses')
+      .select('id, label, student_packages!inner(id, name, expiry_date, archived, people(id, full_name))')
+      .eq('used', false)
+      .eq('student_packages.archived', false)
+      .gt('student_packages.expiry_date', todayStr)
       .limit(5),
   ])
 
@@ -200,6 +226,82 @@ export default async function DashboardPage() {
             <EmptyState message="No passes expiring in the next 2 weeks." />
           )}
         </Card>
+
+        {/* Expiring packages */}
+        {(expiringPackages?.length ?? 0) > 0 && (
+          <Card>
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="font-display text-xl font-light text-[#171410]">Packages expiring soon</h2>
+              <Link href="/crm/packages?filter=expiring" className="text-xs text-[#C9A84C] hover:underline">View all</Link>
+            </div>
+            <ul className="space-y-3">
+              {expiringPackages!.map(p => (
+                <li key={p.id} className="flex items-center justify-between border-b border-[#E2DDD5] pb-3 last:border-0 last:pb-0">
+                  <div>
+                    <Link href={`/crm/packages/${p.id}`} className="text-sm font-medium text-[#171410] hover:text-[#C9A84C]">
+                      {(p.people as { full_name?: string } | null)?.full_name}
+                    </Link>
+                    <p className="text-xs text-[#9A907F]">{p.name}</p>
+                  </div>
+                  <Badge variant={
+                    p.expiry_date && isBefore(parseISO(p.expiry_date), addDays(today, 7)) ? 'red' : 'orange'
+                  }>
+                    {p.expiry_date ? format(parseISO(p.expiry_date), 'd MMM') : '—'}
+                  </Badge>
+                </li>
+              ))}
+            </ul>
+          </Card>
+        )}
+
+        {/* Unpaid packages */}
+        {(unpaidPackages?.length ?? 0) > 0 && (
+          <Card>
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="font-display text-xl font-light text-[#171410]">Unpaid packages</h2>
+              <Link href="/crm/packages?filter=unpaid" className="text-xs text-[#C9A84C] hover:underline">View all</Link>
+            </div>
+            <ul className="space-y-3">
+              {unpaidPackages!.map(p => (
+                <li key={p.id} className="flex items-center justify-between border-b border-[#E2DDD5] pb-3 last:border-0 last:pb-0">
+                  <div>
+                    <Link href={`/crm/packages/${p.id}`} className="text-sm font-medium text-[#171410] hover:text-[#C9A84C]">
+                      {(p.people as { full_name?: string } | null)?.full_name}
+                    </Link>
+                    <p className="text-xs text-[#9A907F]">{p.name}</p>
+                  </div>
+                  <Badge variant="red">Unpaid</Badge>
+                </li>
+              ))}
+            </ul>
+          </Card>
+        )}
+
+        {/* Unused bonuses */}
+        {(unusedBonuses?.length ?? 0) > 0 && (
+          <Card>
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="font-display text-xl font-light text-[#171410]">Unused bonuses</h2>
+              <Link href="/crm/packages" className="text-xs text-[#C9A84C] hover:underline">All packages</Link>
+            </div>
+            <ul className="space-y-3">
+              {unusedBonuses!.map(b => {
+                const sp = b.student_packages as unknown as { id: string; name: string; people: { id: string; full_name: string } | null } | null
+                return (
+                  <li key={b.id} className="flex items-center justify-between border-b border-[#E2DDD5] pb-3 last:border-0 last:pb-0">
+                    <div>
+                      <Link href={`/crm/packages/${sp?.id}`} className="text-sm font-medium text-[#171410] hover:text-[#C9A84C]">
+                        {sp?.people?.full_name}
+                      </Link>
+                      <p className="text-xs text-[#9A907F]">{b.label}</p>
+                    </div>
+                    <Badge variant="gold">Unused</Badge>
+                  </li>
+                )
+              })}
+            </ul>
+          </Card>
+        )}
       </div>
     </div>
   )

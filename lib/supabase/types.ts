@@ -212,3 +212,91 @@ export interface CommunicationLog {
   created_at: string
   people?: Person
 }
+
+// ---------------------------------------------------------------------------
+// PACKAGES & PROMOTIONS
+// ---------------------------------------------------------------------------
+
+export interface PromotionBonusItem {
+  type: string
+  label: string
+  description?: string
+}
+
+export interface Promotion {
+  id: string
+  name: string
+  month_season: string | null
+  start_date: string | null
+  end_date: string | null
+  applicable_class: string | null
+  price: number
+  classes_included: number
+  validity_weeks: number
+  bonus_items: PromotionBonusItem[]
+  notes: string | null
+  active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface StudentPackage {
+  id: string
+  person_id: string
+  promotion_id: string | null
+  name: string
+  price: number
+  classes_included: number
+  classes_attended: number
+  start_date: string | null
+  expiry_date: string | null
+  payment_status: 'unpaid' | 'partial' | 'paid'
+  notes: string | null
+  archived: boolean
+  override_remaining: number | null
+  created_at: string
+  updated_at: string
+  people?: Person
+  promotions?: Promotion
+  package_bonuses?: PackageBonus[]
+}
+
+export interface PackageBonus {
+  id: string
+  package_id: string
+  bonus_type: 'free_private_lesson' | 'half_price_private' | 'free_workshop' | 'free_salsa_fusion' | 'free_colombian_salsa' | 'custom'
+  label: string
+  used: boolean
+  used_date: string | null
+  used_for: string | null
+  notes: string | null
+  created_at: string
+}
+
+export interface NotificationRule {
+  id: string
+  name: string
+  trigger_type: 'expiry' | 'unused_bonus' | 'unused_private_lesson' | 'low_classes' | 'payment_pending'
+  trigger_days_before: number | null
+  audience: 'admin' | 'student' | 'both'
+  channel: 'in_app' | 'email' | 'whatsapp'
+  message_template: string | null
+  applies_globally: boolean
+  enabled: boolean
+  created_at: string
+}
+
+export interface PackageNotification {
+  id: string
+  rule_id: string | null
+  package_id: string
+  person_id: string
+  status: 'created' | 'viewed' | 'sent' | 'dismissed'
+  message: string
+  trigger_type: string
+  created_at: string
+  viewed_at: string | null
+  dismissed_at: string | null
+  people?: Person
+  student_packages?: StudentPackage
+}

@@ -14,6 +14,9 @@ import {
   Star,
   GearSix,
   X,
+  Package,
+  Tag,
+  Bell,
 } from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
 
@@ -25,6 +28,9 @@ const nav = [
   { href: '/crm/attendance',       label: 'Attendance',     icon: CalendarCheck },
   { href: '/crm/payments',         label: 'Payments',       icon: CurrencyCircleDollar },
   { href: '/crm/passes',           label: 'Passes',         icon: Ticket },
+  { href: '/crm/packages',         label: 'Packages',       icon: Package },
+  { href: '/crm/promotions',       label: 'Promotions',     icon: Tag },
+  { href: '/crm/notifications',    label: 'Notifications',  icon: Bell },
   { href: '/crm/private-lessons',  label: 'Private Lessons',icon: Star },
   { href: '/crm/workshops',        label: 'Workshops',      icon: ClipboardText },
   { href: '/crm/settings',         label: 'Settings',       icon: GearSix },
