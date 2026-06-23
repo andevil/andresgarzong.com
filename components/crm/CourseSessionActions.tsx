@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { addWeeks, format, nextDay, parseISO, getDay } from 'date-fns'
+import { addWeeks, format, nextDay, parseISO, getDay, isBefore, isEqual } from 'date-fns'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/crm/ui'
 import { CalendarPlus } from '@phosphor-icons/react'
@@ -23,32 +23,38 @@ export function CourseSessionActions({ courseId }: { courseId: string }) {
       const supabase = createClient()
       const { data: course } = await supabase
         .from('courses')
-        .select('day_of_week, start_time, end_time, location')
+        .select('day_of_week, start_time, end_time, location, start_date, end_date')
         .eq('id', courseId)
         .single()
 
       if (!course?.day_of_week) { setGenerating(false); return }
 
       const dow = DOW_MAP[course.day_of_week]
-      const today = new Date()
-      const sessions = []
+      const rangeStart = course.start_date ? parseISO(course.start_date) : new Date()
+      const rangeEnd   = course.end_date   ? parseISO(course.end_date)   : addWeeks(rangeStart, 8)
 
-      // Generate next 8 weeks of sessions
-      for (let w = 0; w < 8; w++) {
-        const date = addWeeks(nextDay(today, dow), w)
+      // Find first occurrence of the target weekday on or after rangeStart
+      const startDow = getDay(rangeStart)
+      let current = startDow === dow ? rangeStart : nextDay(rangeStart, dow)
+
+      const sessions = []
+      while (isBefore(current, rangeEnd) || isEqual(current, rangeEnd)) {
         sessions.push({
           course_id:  courseId,
-          date:       format(date, 'yyyy-MM-dd'),
+          date:       format(current, 'yyyy-MM-dd'),
           start_time: course.start_time,
           end_time:   course.end_time,
           location:   course.location,
           status:     'scheduled',
         })
+        current = addWeeks(current, 1)
       }
 
-      await supabase
-        .from('class_sessions')
-        .upsert(sessions, { onConflict: 'course_id,date' })
+      if (sessions.length > 0) {
+        await supabase
+          .from('class_sessions')
+          .upsert(sessions, { onConflict: 'course_id,date' })
+      }
 
       setGenerating(false)
       router.refresh()
@@ -58,7 +64,7 @@ export function CourseSessionActions({ courseId }: { courseId: string }) {
   return (
     <Button variant="secondary" size="sm" onClick={generateSessions} disabled={generating}>
       <CalendarPlus size={14} weight="light" />
-      {generating ? 'Generating…' : 'Generate 8 weeks'}
+      {generating ? 'Generating…' : 'Generate sessions'}
     </Button>
   )
 }

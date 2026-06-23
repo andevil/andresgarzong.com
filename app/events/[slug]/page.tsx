@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
 import { format, parseISO } from 'date-fns'
-import { MapPin, Clock, Users, CurrencyCircleDollar, InstagramLogo, WhatsappLogo } from '@phosphor-icons/react/dist/ssr'
+import { MapPin, Clock, Users, CurrencyCircleDollar, InstagramLogo } from '@phosphor-icons/react/dist/ssr'
 import { fmtTime } from '@/lib/utils'
 
 type Params = { slug: string }
@@ -15,14 +15,28 @@ async function getEvent(slug: string) {
     .select('*')
     .eq('slug', slug)
     .single()
-  if (workshop) return { kind: 'workshop' as const, event: workshop }
+  if (workshop) {
+    const { count: enrolled } = await supabase
+      .from('workshop_registrations')
+      .select('*', { count: 'exact', head: true })
+      .eq('workshop_id', workshop.id)
+      .neq('status', 'cancelled')
+    return { kind: 'workshop' as const, event: workshop, enrolled: enrolled ?? 0 }
+  }
 
   const { data: course } = await supabase
     .from('courses')
     .select('*')
     .eq('slug', slug)
     .single()
-  if (course) return { kind: 'course' as const, event: course }
+  if (course) {
+    const { count: enrolled } = await supabase
+      .from('course_enrollments')
+      .select('*', { count: 'exact', head: true })
+      .eq('course_id', course.id)
+      .in('enrollment_status', ['active', 'trial'])
+    return { kind: 'course' as const, event: course, enrolled: enrolled ?? 0 }
+  }
 
   return null
 }
@@ -61,10 +75,14 @@ export default async function EventPage({ params }: { params: Promise<Params> })
   const result = await getEvent(slug)
   if (!result) notFound()
 
-  const { kind, event } = result
+  const { kind, event, enrolled } = result
 
   const dateStr = 'date' in event && event.date
     ? format(parseISO(event.date), 'EEEE, d MMMM yyyy')
+    : null
+
+  const startDateStr = 'start_date' in event && event.start_date
+    ? format(parseISO(event.start_date as string), 'd MMMM yyyy')
     : null
 
   const timeStr = event.start_time
@@ -78,6 +96,9 @@ export default async function EventPage({ params }: { params: Promise<Params> })
     : 'default_price' in event
       ? `${(event.default_price as number).toLocaleString()} HUF / class`
       : null
+
+  const capacity = event.capacity as number | null | undefined
+  const availableSpots = capacity != null ? Math.max(0, capacity - enrolled) : null
 
   return (
     <div className="min-h-screen bg-[#F7F1E7] py-10">
@@ -103,13 +124,30 @@ export default async function EventPage({ params }: { params: Promise<Params> })
 
         {/* Details grid */}
         <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {dateStr && (
+          {/* Workshop: exact date · Course: weekly schedule + start date */}
+          {kind === 'workshop' && dateStr && (
             <div className="flex items-start gap-3 border border-[#E2DDD5] bg-white p-4">
               <Clock size={20} weight="light" className="mt-0.5 shrink-0 text-[#C9A84C]" />
               <div>
                 <p className="text-xs font-semibold uppercase tracking-widest text-[#9A907F]">Date &amp; Time</p>
                 <p className="mt-1 text-sm text-[#171410]">{dateStr}</p>
                 {timeStr && <p className="text-sm text-[#6B6155]">{timeStr}</p>}
+              </div>
+            </div>
+          )}
+          {kind === 'course' && ('day_of_week' in event || startDateStr) && (
+            <div className="flex items-start gap-3 border border-[#E2DDD5] bg-white p-4">
+              <Clock size={20} weight="light" className="mt-0.5 shrink-0 text-[#C9A84C]" />
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-widest text-[#9A907F]">Schedule</p>
+                {'day_of_week' in event && event.day_of_week && (
+                  <p className="mt-1 text-sm capitalize text-[#171410]">
+                    Every {event.day_of_week as string}{timeStr ? ` · ${timeStr}` : ''}
+                  </p>
+                )}
+                {startDateStr && (
+                  <p className="text-sm text-[#6B6155]">Starting {startDateStr}</p>
+                )}
               </div>
             </div>
           )}
@@ -131,12 +169,14 @@ export default async function EventPage({ params }: { params: Promise<Params> })
               </div>
             </div>
           )}
-          {'capacity' in event && event.capacity && (
+          {availableSpots != null && (
             <div className="flex items-start gap-3 border border-[#E2DDD5] bg-white p-4">
               <Users size={20} weight="light" className="mt-0.5 shrink-0 text-[#C9A84C]" />
               <div>
-                <p className="text-xs font-semibold uppercase tracking-widest text-[#9A907F]">Capacity</p>
-                <p className="mt-1 text-sm text-[#171410]">{event.capacity} spots</p>
+                <p className="text-xs font-semibold uppercase tracking-widest text-[#9A907F]">Spots available</p>
+                <p className="mt-1 text-sm text-[#171410]">
+                  {availableSpots === 0 ? 'Class is full' : `${availableSpots} of ${capacity} spots left`}
+                </p>
               </div>
             </div>
           )}
@@ -154,24 +194,15 @@ export default async function EventPage({ params }: { params: Promise<Params> })
         <div className="border border-[#E2DDD5] bg-white p-6 text-center">
           <p className="mb-1 font-display text-2xl font-light text-[#171410]">Ready to join?</p>
           <p className="mb-5 text-sm text-[#9A907F]">Reach out to reserve your spot</p>
-          <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+          <div className="flex justify-center">
             <a
-              href="https://www.instagram.com/salsitawithcris"
+              href="https://www.instagram.com/andresgarzong"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 bg-[#171410] px-6 py-3 text-sm font-medium text-white transition-opacity hover:opacity-80"
             >
               <InstagramLogo size={18} weight="light" />
-              Instagram DM
-            </a>
-            <a
-              href="https://wa.me/message/salsitawithcris"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 bg-[#C9A84C] px-6 py-3 text-sm font-medium text-[#171410] transition-opacity hover:opacity-80"
-            >
-              <WhatsappLogo size={18} weight="light" />
-              WhatsApp
+              @andresgarzong
             </a>
           </div>
         </div>

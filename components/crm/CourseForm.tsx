@@ -32,7 +32,10 @@ const schema = z.object({
   default_price:      z.coerce.number(),
   monthly_pass_price: z.coerce.number(),
   notes:              z.string().optional(),
-})
+}).refine(data => {
+  if (data.start_date && data.end_date && data.end_date <= data.start_date) return false
+  return true
+}, { message: 'End date must be after start date', path: ['end_date'] })
 
 type F = z.infer<typeof schema>
 
