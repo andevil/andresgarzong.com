@@ -45,6 +45,17 @@ async function syncSessions(supabase: ReturnType<typeof createClient>, courseId:
   if (sessions.length > 0) {
     await supabase.from('class_sessions').upsert(sessions, { onConflict: 'course_id,date' })
   }
+
+  // Remove scheduled sessions that now fall outside the date range.
+  // Only 'scheduled' sessions are deleted — completed/cancelled ones are preserved.
+  const startStr = format(rangeStart, 'yyyy-MM-dd')
+  const endStr   = format(endDate,    'yyyy-MM-dd')
+  await supabase
+    .from('class_sessions')
+    .delete()
+    .eq('course_id', courseId)
+    .eq('status', 'scheduled')
+    .or(`date.lt.${startStr},date.gt.${endStr}`)
 }
 
 function toSlug(s: string) {
