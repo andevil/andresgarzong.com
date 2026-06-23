@@ -5,10 +5,47 @@ import { useRouter } from 'next/navigation'
 import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { addWeeks, format, getDay, isBefore, isEqual, nextDay, parseISO } from 'date-fns'
 import { createClient } from '@/lib/supabase/client'
 import { Field, Input, Select, Textarea, Button, Card } from '@/components/crm/ui'
 import { ImageUpload } from '@/components/crm/ImageUpload'
 import type { Course } from '@/lib/supabase/types'
+
+const DOW_MAP: Record<string, 0 | 1 | 2 | 3 | 4 | 5 | 6> = {
+  sunday: 0, monday: 1, tuesday: 2, wednesday: 3,
+  thursday: 4, friday: 5, saturday: 6,
+}
+
+async function syncSessions(supabase: ReturnType<typeof createClient>, courseId: string, values: {
+  day_of_week?: string; start_date?: string; end_date?: string
+  start_time?: string; end_time?: string; location?: string
+}) {
+  if (!values.day_of_week || !values.end_date) return
+  const endDate = parseISO(values.end_date)
+  if (isBefore(endDate, new Date())) return   // end date is in the past — skip
+
+  const dow = DOW_MAP[values.day_of_week]
+  const rangeStart = values.start_date ? parseISO(values.start_date) : new Date()
+  const startDow = getDay(rangeStart)
+  let current = startDow === dow ? rangeStart : nextDay(rangeStart, dow)
+
+  const sessions = []
+  while (isBefore(current, endDate) || isEqual(current, endDate)) {
+    sessions.push({
+      course_id:  courseId,
+      date:       format(current, 'yyyy-MM-dd'),
+      start_time: values.start_time || null,
+      end_time:   values.end_time   || null,
+      location:   values.location   || null,
+      status:     'scheduled',
+    })
+    current = addWeeks(current, 1)
+  }
+
+  if (sessions.length > 0) {
+    await supabase.from('class_sessions').upsert(sessions, { onConflict: 'course_id,date' })
+  }
+}
 
 function toSlug(s: string) {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
@@ -98,6 +135,8 @@ export function CourseForm({ course }: { course?: Course }) {
     if (course) {
       const { error } = await supabase.from('courses').update(payload).eq('id', course.id)
       if (error) { setSubmitError(error.message); return }
+      // Sync sessions whenever end_date is updated and still in the future
+      await syncSessions(supabase, course.id, values)
       router.push(`/crm/courses/${course.id}`)
     } else {
       const { data, error } = await supabase.from('courses').insert(payload).select().single()

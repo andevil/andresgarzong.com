@@ -202,7 +202,7 @@ export default async function EventPage({ params }: { params: Promise<Params> })
               className="flex items-center gap-2 bg-[#171410] px-6 py-3 text-sm font-medium text-white transition-opacity hover:opacity-80"
             >
               <InstagramLogo size={18} weight="light" />
-              @andresgarzong
+              andresgarzong
             </a>
           </div>
         </div>
