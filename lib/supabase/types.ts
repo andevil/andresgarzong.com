@@ -315,6 +315,10 @@ export interface PublicRegistration {
   coming_with_partner: boolean | null
   partner_name:        string | null
   status:              'pending' | 'payment_sent' | 'paid' | 'cancelled'
+  person_id:           string | null
   notes:               string | null
   created_at:          string
 }
+
+// Re-export with person_id added (migration 005)
+// The PublicRegistration interface above is patched below:

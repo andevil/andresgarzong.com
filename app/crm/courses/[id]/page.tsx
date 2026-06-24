@@ -7,6 +7,7 @@ import { statusBadge } from '@/components/crm/ui'
 import { PencilSimple, ArrowLeft, Plus, ArrowSquareOut } from '@phosphor-icons/react/dist/ssr'
 import { CourseSessionActions } from '@/components/crm/CourseSessionActions'
 import { DeleteButton } from '@/components/crm/DeleteButton'
+import { PendingRegistrationActions } from '@/components/crm/PendingRegistrationActions'
 import { fmtTime } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
@@ -15,7 +16,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
   const { id } = await params
   const supabase = await createClient()
 
-  const [{ data: course }, { data: enrollments }, { data: sessions }] = await Promise.all([
+  const [{ data: course }, { data: enrollments }, { data: sessions }, { data: pending }] = await Promise.all([
     supabase.from('courses').select('*').eq('id', id).single(),
     supabase
       .from('course_enrollments')
@@ -27,6 +28,13 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
       .eq('course_id', id)
       .order('date', { ascending: false })
       .limit(20),
+    supabase
+      .from('public_registrations')
+      .select('*')
+      .eq('event_id', id)
+      .eq('event_type', 'course')
+      .in('status', ['pending', 'payment_sent'])
+      .order('created_at', { ascending: true }),
   ])
 
   if (!course) notFound()
@@ -73,6 +81,43 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
           </Card>
         ))}
       </div>
+
+      {/* Pending registrations */}
+      {pending && pending.length > 0 && (
+        <Card className="mb-6">
+          <div className="mb-4 flex items-center justify-between">
+            <h3 className="font-display text-lg font-light text-[#171410]">
+              Pending registration
+              <span className="ml-2 text-sm font-normal text-[#C9A84C]">({pending.length})</span>
+            </h3>
+          </div>
+          <div className="space-y-3">
+            {pending.map(r => (
+              <div key={r.id} className="flex items-start justify-between gap-4 border border-[#E2DDD5] p-4">
+                <div>
+                  <p className="font-medium text-[#171410]">{r.name}</p>
+                  <div className="mt-1 flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-[#6B6155]">
+                    {r.email     && <span>{r.email}</span>}
+                    {r.phone     && <span>{r.phone}</span>}
+                    {r.instagram && <span>@{r.instagram}</span>}
+                  </div>
+                  <div className="mt-1 flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-[#9A907F]">
+                    {r.dance_level && <span className="capitalize">{(r.dance_level as string).replace('-', ' ')}</span>}
+                    {r.dance_role  && <span className="capitalize">{r.dance_role}</span>}
+                    {r.coming_with_partner != null && (
+                      <span>{r.coming_with_partner ? `With partner${r.partner_name ? `: ${r.partner_name}` : ''}` : 'Solo'}</span>
+                    )}
+                    <Badge variant={r.status === 'payment_sent' ? 'blue' : 'orange'}>
+                      {(r.status as string).replace('_', ' ')}
+                    </Badge>
+                  </div>
+                </div>
+                <PendingRegistrationActions id={r.id as string} />
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
 
       {/* Enrolled dancers */}
       <Card className="mb-6">
