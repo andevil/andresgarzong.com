@@ -300,3 +300,21 @@ export interface PackageNotification {
   people?: Person
   student_packages?: StudentPackage
 }
+
+export interface PublicRegistration {
+  id:                  string
+  event_type:          'course' | 'workshop'
+  event_id:            string
+  event_name:          string
+  name:                string
+  email:               string | null
+  instagram:           string | null
+  phone:               string | null
+  dance_level:         string | null
+  dance_role:          'leader' | 'follower' | 'both' | null
+  coming_with_partner: boolean | null
+  partner_name:        string | null
+  status:              'pending' | 'payment_sent' | 'paid' | 'cancelled'
+  notes:               string | null
+  created_at:          string
+}

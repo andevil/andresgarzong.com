@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { format, parseISO } from 'date-fns'
 import { MapPin, Clock, Users, CurrencyCircleDollar, InstagramLogo } from '@phosphor-icons/react/dist/ssr'
 import { fmtTime } from '@/lib/utils'
+import { AttendModal } from '@/components/AttendModal'
 
 type Params = { slug: string }
 
@@ -193,18 +194,22 @@ export default async function EventPage({ params }: { params: Promise<Params> })
         {/* CTA */}
         <div className="border border-[#E2DDD5] bg-white p-6 text-center">
           <p className="mb-1 font-display text-2xl font-light text-[#171410]">Ready to join?</p>
-          <p className="mb-5 text-sm text-[#9A907F]">Reach out to reserve your spot</p>
-          <div className="flex justify-center">
-            <a
-              href="https://www.instagram.com/andresgarzong"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 bg-[#171410] px-6 py-3 text-sm font-medium text-white transition-opacity hover:opacity-80"
-            >
-              <InstagramLogo size={18} weight="light" />
-              andresgarzong
-            </a>
-          </div>
+          <p className="mb-5 text-sm text-[#9A907F]">Reserve your spot — payment details follow after sign-up</p>
+          <AttendModal
+            eventId={event.id}
+            eventType={kind}
+            eventName={event.name}
+            isPartnerwork={kind === 'course' && 'style' in event && event.style === 'partnerwork'}
+          />
+          <a
+            href="https://www.instagram.com/andresgarzong"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-3 flex items-center justify-center gap-2 text-xs text-[#9A907F] transition-colors hover:text-[#171410]"
+          >
+            <InstagramLogo size={14} weight="light" />
+            andresgarzong
+          </a>
         </div>
 
         {/* Footer brand */}

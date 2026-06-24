@@ -17,6 +17,7 @@ import {
   Package,
   Tag,
   Bell,
+  EnvelopeSimple,
 } from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
 
@@ -31,6 +32,7 @@ const nav = [
   { href: '/crm/packages',         label: 'Packages',       icon: Package },
   { href: '/crm/promotions',       label: 'Promotions',     icon: Tag },
   { href: '/crm/notifications',    label: 'Notifications',  icon: Bell },
+  { href: '/crm/registrations',    label: 'Registrations',  icon: EnvelopeSimple },
   { href: '/crm/private-lessons',  label: 'Private Lessons',icon: Star },
   { href: '/crm/workshops',        label: 'Workshops',      icon: ClipboardText },
   { href: '/crm/settings',         label: 'Settings',       icon: GearSix },
