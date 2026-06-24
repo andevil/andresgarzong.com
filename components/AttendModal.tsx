@@ -6,12 +6,14 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { X, CheckCircle } from '@phosphor-icons/react'
 
+const PHONE_RE = /^[+\d][\d\s\-().]{5,28}$/
+
 const schema = z.object({
   name:  z.string().min(1, 'Name is required').max(100).trim(),
-  email: z.string().max(200).trim().optional()
-    .refine(v => !v || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), { message: 'Invalid email address' }),
-  instagram:           z.string().max(100).trim().optional(),
-  phone:               z.string().max(30).trim().optional(),
+  email: z.string().min(1, 'Email is required').email('Invalid email address').max(200).trim(),
+  instagram: z.string().max(100).trim().optional(),
+  phone: z.string().trim().optional()
+    .refine(v => !v || PHONE_RE.test(v), { message: 'Enter a valid phone number, e.g. +36 20 123 4567' }),
   dance_level:         z.string().min(1, 'Please select your level'),
   dance_role:          z.string().optional(),
   coming_with_partner: z.boolean().optional(),
@@ -153,7 +155,7 @@ export function AttendModal({ eventId, eventType, eventName, isPartnerwork }: Pr
                   />
                 </Field>
 
-                <Field label="Email" error={errors.email?.message}>
+                <Field label="Email *" error={errors.email?.message}>
                   <input
                     {...register('email')}
                     type="email"

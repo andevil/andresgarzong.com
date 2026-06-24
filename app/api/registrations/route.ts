@@ -13,12 +13,11 @@ const schema = z.object({
   name:  z.string().min(1, 'Name is required').max(100).trim(),
   email: z
     .string()
+    .min(1, 'Email is required')
+    .email('Invalid email address')
     .max(200)
     .trim()
-    .toLowerCase()
-    .optional()
-    .transform(v => (v && v.length > 0 ? v : null))
-    .pipe(z.string().email('Invalid email address').nullable()),
+    .toLowerCase(),
 
   instagram: z
     .string()
@@ -32,6 +31,7 @@ const schema = z.object({
     .max(30)
     .trim()
     .optional()
+    .refine(v => !v || /^[+\d][\d\s\-().]{5,28}$/.test(v), { message: 'Invalid phone number' })
     .transform(v => v || null),
 
   dance_level: z
