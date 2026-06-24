@@ -174,7 +174,7 @@ export default async function EventPage({ params }: { params: Promise<Params> })
               </div>
             </div>
           )}
-          {kind === 'workshop' && priceStr && (
+          {priceStr && (
             <div className="flex items-start gap-3 border border-[#E2DDD5] bg-white p-4">
               <CurrencyCircleDollar size={20} weight="light" className="mt-0.5 shrink-0 text-[#C9A84C]" />
               <div>
@@ -209,24 +209,12 @@ export default async function EventPage({ params }: { params: Promise<Params> })
           <div className="mb-8 border border-[#E2DDD5] bg-white p-6">
             <h2 className="mb-4 font-display text-xl font-light text-[#171410]">Pricing</h2>
             <div className="divide-y divide-[#E2DDD5]">
-              {/* Drop-in */}
-              {'default_price' in event && (
-                <div className="flex items-baseline justify-between py-3 first:pt-0">
-                  <div>
-                    <span className="text-sm text-[#171410]">Drop-in class</span>
-                    <span className="ml-2 text-xs text-[#9A907F]">Single session</span>
-                  </div>
-                  <span className="text-sm font-medium text-[#171410]">
-                    {(event.default_price as number).toLocaleString()} HUF
-                  </span>
-                </div>
-              )}
               {/* Monthly pass from course */}
               {'monthly_pass_price' in event && event.monthly_pass_price != null && (event.monthly_pass_price as number) > 0 && (
-                <div className="flex items-baseline justify-between py-3">
+                <div className="flex items-baseline justify-between py-3 first:pt-0">
                   <div>
                     <span className="text-sm text-[#171410]">Monthly pass</span>
-                    <span className="ml-2 text-xs text-[#9A907F]">4–5 classes / month</span>
+                    <span className="ml-2 text-xs text-[#9A907F]">4 classes / month</span>
                   </div>
                   <span className="text-sm font-medium text-[#C9A84C]">
                     {(event.monthly_pass_price as number).toLocaleString()} HUF
