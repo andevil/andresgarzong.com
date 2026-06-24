@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { X, CheckCircle } from '@phosphor-icons/react'
+import { X, CheckCircle, WarningCircle } from '@phosphor-icons/react'
 
 const PHONE_RE = /^[+\d][\d\s\-().]{5,28}$/
 
@@ -36,17 +36,25 @@ function Field({ label, error, children }: { label: string; error?: string; chil
         {label}
       </label>
       {children}
-      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+      {error && (
+        <p className="mt-1 flex items-center gap-1 text-xs text-red-600">
+          <WarningCircle size={12} weight="fill" className="shrink-0" />
+          {error}
+        </p>
+      )}
     </div>
   )
 }
 
-const inputCls = 'w-full border border-[#E2DDD5] bg-white px-3 py-2.5 text-sm text-[#171410] outline-none focus:border-[#C9A84C] transition-colors'
+function cls(err?: string) {
+  return `w-full border ${err ? 'border-red-400 bg-red-50/20' : 'border-[#E2DDD5] bg-white'} px-3 py-2.5 text-sm text-[#171410] outline-none focus:border-[#C9A84C] transition-colors`
+}
 
 export function AttendModal({ eventId, eventType, eventName, isPartnerwork }: Props) {
   const [open, setOpen]         = useState(false)
   const [success, setSuccess]   = useState(false)
   const [serverError, setError] = useState<string | null>(null)
+  const [shaking, setShaking]   = useState(false)
 
   const { register, handleSubmit, watch, reset, formState: { errors, isSubmitting } } = useForm<F>({
     resolver: zodResolver(schema),
@@ -144,12 +152,18 @@ export function AttendModal({ eventId, eventType, eventName, isPartnerwork }: Pr
               </div>
             ) : (
               /* ── Form ──────────────────────────────────────────────────── */
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 px-6 py-6">
+              <form
+                onSubmit={handleSubmit(onSubmit, () => {
+                  setShaking(true)
+                  setTimeout(() => setShaking(false), 400)
+                })}
+                className={`space-y-4 px-6 py-6 ${shaking ? 'shake' : ''}`}
+              >
 
                 <Field label="Full name *" error={errors.name?.message}>
                   <input
                     {...register('name')}
-                    className={inputCls}
+                    className={cls(errors.name?.message)}
                     placeholder="Maria García"
                     autoComplete="name"
                   />
@@ -159,7 +173,7 @@ export function AttendModal({ eventId, eventType, eventName, isPartnerwork }: Pr
                   <input
                     {...register('email')}
                     type="email"
-                    className={inputCls}
+                    className={cls(errors.email?.message)}
                     placeholder="maria@example.com"
                     autoComplete="email"
                   />
@@ -171,18 +185,18 @@ export function AttendModal({ eventId, eventType, eventName, isPartnerwork }: Pr
                       <span className="flex items-center border border-r-0 border-[#E2DDD5] bg-[#E2DDD5] px-3 text-sm text-[#9A907F]">@</span>
                       <input
                         {...register('instagram')}
-                        className={inputCls + ' border-l-0'}
+                        className={cls() + ' border-l-0'}
                         placeholder="mariadance"
                         autoComplete="off"
                       />
                     </div>
                   </Field>
 
-                  <Field label="WhatsApp / phone">
+                  <Field label="WhatsApp / phone" error={errors.phone?.message}>
                     <input
                       {...register('phone')}
                       type="tel"
-                      className={inputCls}
+                      className={cls(errors.phone?.message)}
                       placeholder="+36 20 123 4567"
                       autoComplete="tel"
                     />
@@ -190,7 +204,7 @@ export function AttendModal({ eventId, eventType, eventName, isPartnerwork }: Pr
                 </div>
 
                 <Field label="Dance level *" error={errors.dance_level?.message}>
-                  <select {...register('dance_level')} className={inputCls}>
+                  <select {...register('dance_level')} className={cls(errors.dance_level?.message)}>
                     <option value="">Select your level…</option>
                     <option value="absolute-beginner">Absolute beginner — never danced salsa</option>
                     <option value="beginner">Beginner — I know the basics</option>
@@ -203,7 +217,7 @@ export function AttendModal({ eventId, eventType, eventName, isPartnerwork }: Pr
                 {isPartnerwork && (
                   <>
                     <Field label="I want to dance as">
-                      <select {...register('dance_role')} className={inputCls}>
+                      <select {...register('dance_role')} className={cls()}>
                         <option value="">—</option>
                         <option value="leader">Leader</option>
                         <option value="follower">Follower</option>
@@ -227,7 +241,7 @@ export function AttendModal({ eventId, eventType, eventName, isPartnerwork }: Pr
                       <Field label="Partner's name">
                         <input
                           {...register('partner_name')}
-                          className={inputCls}
+                          className={cls()}
                           placeholder="Partner's full name"
                         />
                       </Field>

@@ -71,12 +71,25 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   }
 }
 
+type PromotionRow = { id: string; name: string; base_price: number; classes_included: number | null; validity_weeks: number | null }
+
 export default async function EventPage({ params }: { params: Promise<Params> }) {
   const { slug } = await params
   const result = await getEvent(slug)
   if (!result) notFound()
 
   const { kind, event, enrolled } = result
+
+  let promotions: PromotionRow[] = []
+  if (kind === 'course') {
+    const supabase = await createClient()
+    const { data } = await supabase
+      .from('promotions')
+      .select('id, name, base_price, classes_included, validity_weeks')
+      .eq('is_active', true)
+      .order('base_price', { ascending: true })
+    promotions = (data ?? []) as PromotionRow[]
+  }
 
   const dateStr = 'date' in event && event.date
     ? format(parseISO(event.date), 'EEEE, d MMMM yyyy')
@@ -188,6 +201,58 @@ export default async function EventPage({ params }: { params: Promise<Params> })
           <div className="mb-8 border border-[#E2DDD5] bg-white p-6">
             <h2 className="mb-3 font-display text-xl font-light text-[#171410]">About this event</h2>
             <p className="whitespace-pre-line text-sm leading-relaxed text-[#6B6155]">{event.description}</p>
+          </div>
+        )}
+
+        {/* Pricing — courses only */}
+        {kind === 'course' && (
+          <div className="mb-8 border border-[#E2DDD5] bg-white p-6">
+            <h2 className="mb-4 font-display text-xl font-light text-[#171410]">Pricing</h2>
+            <div className="divide-y divide-[#E2DDD5]">
+              {/* Drop-in */}
+              {'default_price' in event && (
+                <div className="flex items-baseline justify-between py-3 first:pt-0">
+                  <div>
+                    <span className="text-sm text-[#171410]">Drop-in class</span>
+                    <span className="ml-2 text-xs text-[#9A907F]">Single session</span>
+                  </div>
+                  <span className="text-sm font-medium text-[#171410]">
+                    {(event.default_price as number).toLocaleString()} HUF
+                  </span>
+                </div>
+              )}
+              {/* Monthly pass from course */}
+              {'monthly_pass_price' in event && event.monthly_pass_price != null && (event.monthly_pass_price as number) > 0 && (
+                <div className="flex items-baseline justify-between py-3">
+                  <div>
+                    <span className="text-sm text-[#171410]">Monthly pass</span>
+                    <span className="ml-2 text-xs text-[#9A907F]">4–5 classes / month</span>
+                  </div>
+                  <span className="text-sm font-medium text-[#C9A84C]">
+                    {(event.monthly_pass_price as number).toLocaleString()} HUF
+                  </span>
+                </div>
+              )}
+              {/* Multi-month packages from promotions */}
+              {promotions.map(p => (
+                <div key={p.id} className="flex items-baseline justify-between py-3 last:pb-0">
+                  <div>
+                    <span className="text-sm text-[#171410]">{p.name}</span>
+                    {(p.classes_included || p.validity_weeks) && (
+                      <span className="ml-2 text-xs text-[#9A907F]">
+                        {[
+                          p.classes_included ? `${p.classes_included} classes` : null,
+                          p.validity_weeks   ? `${p.validity_weeks} weeks`     : null,
+                        ].filter(Boolean).join(' · ')}
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-sm font-medium text-[#C9A84C]">
+                    {p.base_price.toLocaleString()} HUF
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 

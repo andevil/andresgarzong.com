@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useForm, useWatch } from 'react-hook-form'
+import { useForm, useWatch, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { addWeeks, format, getDay, isBefore, isEqual, nextDay, parseISO } from 'date-fns'
 import { createClient } from '@/lib/supabase/client'
 import { Field, Input, Select, Textarea, Button, Card } from '@/components/crm/ui'
+import { TimeSelect } from '@/components/crm/TimeSelect'
 import { ImageUpload } from '@/components/crm/ImageUpload'
 import type { Course } from '@/lib/supabase/types'
 
@@ -211,11 +212,19 @@ export function CourseForm({ course }: { course?: Course }) {
               <option value="Roxy Studio, Tátra u. 4">Roxy Studio</option>
             </Select>
           </Field>
-          <Field label="Start time" htmlFor="start_time">
-            <Input id="start_time" type="time" {...register('start_time')} />
+          <Field label="Start time">
+            <Controller
+              control={control}
+              name="start_time"
+              render={({ field }) => <TimeSelect value={field.value ?? ''} onChange={field.onChange} />}
+            />
           </Field>
-          <Field label="End time" htmlFor="end_time">
-            <Input id="end_time" type="time" {...register('end_time')} />
+          <Field label="End time">
+            <Controller
+              control={control}
+              name="end_time"
+              render={({ field }) => <TimeSelect value={field.value ?? ''} onChange={field.onChange} />}
+            />
           </Field>
           {/* Dates */}
           <Field label="Start date" htmlFor="start_date">
