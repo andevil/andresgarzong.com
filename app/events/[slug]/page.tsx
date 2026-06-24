@@ -174,7 +174,7 @@ export default async function EventPage({ params }: { params: Promise<Params> })
               </div>
             </div>
           )}
-          {priceStr && (
+          {kind === 'workshop' && priceStr && (
             <div className="flex items-start gap-3 border border-[#E2DDD5] bg-white p-4">
               <CurrencyCircleDollar size={20} weight="light" className="mt-0.5 shrink-0 text-[#C9A84C]" />
               <div>
